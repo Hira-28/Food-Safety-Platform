@@ -1,6 +1,4 @@
-<<<<<<< HEAD
 # Food-Safety-Platform
-It is a student feedback platform, where students give feedback on campus area food hotels.
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 It is a student feedback platform where students give feedback on campus area food hotels.
@@ -32,7 +30,3 @@ Check out the [Next.js documentation](https://nextjs.org/docs) and the [Next.js 
 ## Deploy on Vercel
 
 The easiest way to deploy this app is through [Vercel](https://vercel.com/new).
-
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
->>>>>>> 233bdce (Initial commit from Create Next App)
