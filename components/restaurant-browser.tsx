@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { RestaurantCard } from "@/components/restaurant-card";
-import { Restaurant, FoodCategory } from "@/.next/types/restaurant";
+import { Restaurant, FoodCategory } from "@/lib/types";
 
 const ALL_CATEGORIES: FoodCategory[] = [
   "Bengali",
