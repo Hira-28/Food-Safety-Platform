@@ -1,6 +1,7 @@
 import Image from "next/image";
-
+import Link from "next/link";
 type Restaurant = {
+  id: string | number;
   imageUrl: string;
   name: string;
   rating: number;
@@ -8,12 +9,12 @@ type Restaurant = {
   location: string;
   openNow: boolean;
   categories: string[];
-  hasActiveComplaint: boolean;
+  hasActiveComplaint?: boolean;
 };
 
 export function RestaurantCard({ restaurant }: { restaurant: Restaurant }) {
   return (
-    <div className="group cursor-pointer">
+    <Link href={`/restaurants/${restaurant.id}`} className="group block">
       <div className="relative aspect-[3/2] overflow-hidden rounded-2xl">
         <Image
           src={restaurant.imageUrl}
@@ -51,6 +52,6 @@ export function RestaurantCard({ restaurant }: { restaurant: Restaurant }) {
           </p>
         )}
       </div>
-    </div>
+    </Link>
   );
 }
