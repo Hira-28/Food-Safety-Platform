@@ -50,3 +50,14 @@ export const STATUS_TONE_CLASSES = {
   alert: "bg-[#B54E3D]/10 text-[#B54E3D]",
   success: "bg-[#2F6F4E]/10 text-[#2F6F4E]",
 } as const;
+export const OPEN_STATUSES: ReportStatus[] = [
+  "submitted",
+  "under_review",
+  "requires_info",
+];
+
+export const PUBLIC_STATUSES: ReportStatus[] = [
+  "verified",
+  "resolved",
+  "action_taken",
+];

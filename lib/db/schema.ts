@@ -38,11 +38,18 @@ export const reportStatusEnum = pgEnum("report_status", [
   "closed",
 ]);
 
+export const userRoleEnum = pgEnum("user_role", [
+  "student",
+  "officer",
+  "super_admin",
+]);
+
 export const users = pgTable("user", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
   passwordHash: text("password_hash").notNull(),
+  role: userRoleEnum("role").notNull().default("student"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
@@ -57,5 +64,19 @@ export const reports = pgTable("reports", {
   type: reportTypeEnum("type").notNull(),
   description: text("description").notNull(),
   status: reportStatusEnum("status").notNull().default("submitted"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const reportEvents = pgTable("report_events", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  reportId: uuid("report_id")
+    .notNull()
+    .references(() => reports.id),
+  actorId: uuid("actor_id")
+    .notNull()
+    .references(() => users.id),
+  fromStatus: reportStatusEnum("from_status"),
+  toStatus: reportStatusEnum("to_status").notNull(),
+  note: text("note"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });

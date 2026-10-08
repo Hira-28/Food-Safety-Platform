@@ -1,10 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and, inArray } from "drizzle-orm";
 import { notFound } from "next/navigation";
+import { currentUserRole } from "@/lib/auth-helpers";
 import { db } from "@/lib/db";
 import { restaurants, reports } from "@/lib/db/schema";
 import { REPORT_TYPES } from "@/lib/report-types";
+import { REPORT_STATUSES, PUBLIC_STATUSES } from "@/lib/report-status";
 
 export default async function RestaurantDetailPage({
   params,
@@ -15,6 +17,8 @@ export default async function RestaurantDetailPage({
 }) {
   const { id } = await params;
   const { reported } = await searchParams;
+  const role = await currentUserRole();
+  const isOfficer = role === "officer" || role === "super_admin";
 
   const [restaurant] = await db
     .select()
@@ -28,7 +32,12 @@ export default async function RestaurantDetailPage({
   const restaurantReports = await db
     .select()
     .from(reports)
-    .where(eq(reports.restaurantId, id))
+    .where(
+      and(
+        eq(reports.restaurantId, id),
+        inArray(reports.status, PUBLIC_STATUSES)
+      )
+    )
     .orderBy(desc(reports.createdAt));
 
   return (
@@ -92,30 +101,31 @@ export default async function RestaurantDetailPage({
           </div>
         )}
 
-        <Link
-          href={`/reports/new?restaurant=${restaurant.id}`}
-          className="inline-block mt-6 rounded-full bg-[#2F6F4E] text-white text-sm font-medium px-5 py-2.5 hover:bg-[#255a3f] transition-colors"
-        >
-          Report an issue here
-        </Link>
+        {!isOfficer && (
+          <Link
+            href={`/reports/new?restaurant=${restaurant.id}`}
+            className="inline-block mt-6 rounded-full bg-[#2F6F4E] text-white text-sm font-medium px-5 py-2.5 hover:bg-[#255a3f] transition-colors"
+          >
+            Report an issue here
+          </Link>
+        )}
       </div>
 
       <div className="mt-12 pt-8 border-t border-[#1C2B24]/10">
         <h2 className="font-display text-xl text-[#1C2B24] mb-4">
-          Recent Feedback ({restaurantReports.length})
+          Reviewed Reports ({restaurantReports.length})
         </h2>
 
         {restaurantReports.length === 0 ? (
           <p className="text-[#1C2B24]/50 text-sm">
-            No reports yet for this restaurant. Be the first to share your
-            experience.
+            No reviewed reports for this restaurant. Reports appear here only
+            after the proctorial team has reviewed them.
           </p>
         ) : (
           <div className="space-y-4">
             {restaurantReports.map((r) => {
               const typeLabel =
-                REPORT_TYPES.find((t) => t.value === r.type)?.label ??
-                r.type;
+                REPORT_TYPES.find((t) => t.value === r.type)?.label ?? r.type;
               return (
                 <div
                   key={r.id}
@@ -132,8 +142,8 @@ export default async function RestaurantDetailPage({
                   <p className="text-sm text-[#1C2B24]/70 mt-1">
                     {r.description}
                   </p>
-                  <span className="inline-block mt-2 text-xs text-[#1C2B24]/40 capitalize">
-                    Status: {r.status.replace("_", " ")}
+                  <span className="inline-block mt-2 text-xs text-[#1C2B24]/40">
+                    Status: {REPORT_STATUSES[r.status].label}
                   </span>
                 </div>
               );

@@ -2,19 +2,16 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { reports, reportTypeEnum, restaurants } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
+import { requireStudent } from "@/lib/auth-helpers";
 
 export async function createReport(
   _previousState: { error: string } | undefined,
   formData: FormData
 ) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    redirect("/auth/signin");
-  }
+  const student = await requireStudent();
 
   const restaurantId = formData.get("restaurantId");
   const type = formData.get("type");
@@ -59,7 +56,7 @@ export async function createReport(
 
   await db.insert(reports).values({
     restaurantId,
-    studentId: session.user.id,
+    studentId: student.id,
     type: type as (typeof reportTypeEnum.enumValues)[number],
     description: trimmedDescription,
   });

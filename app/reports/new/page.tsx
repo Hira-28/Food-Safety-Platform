@@ -2,8 +2,11 @@ import { Suspense } from "react";
 import { db } from "@/lib/db";
 import { restaurants } from "@/lib/db/schema";
 import { ReportForm } from "@/components/report-form";
+import { requireStudent } from "@/lib/auth-helpers";
 
 export default async function NewReportPage() {
+  await requireStudent();
+
   const allRestaurants = await db
     .select({ id: restaurants.id, name: restaurants.name })
     .from(restaurants);

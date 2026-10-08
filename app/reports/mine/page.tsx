@@ -1,17 +1,13 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { eq, desc } from "drizzle-orm";
-import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { reports, restaurants } from "@/lib/db/schema";
 import { REPORT_TYPES } from "@/lib/report-types";
 import { REPORT_STATUSES, STATUS_TONE_CLASSES } from "@/lib/report-status";
+import { requireStudent } from "@/lib/auth-helpers";
 
 export default async function MyReportsPage() {
-  const session = await auth();
-  if (!session?.user?.id) {
-    redirect("/auth/signin");
-  }
+  const student = await requireStudent();
 
   const myReports = await db
     .select({
@@ -25,7 +21,7 @@ export default async function MyReportsPage() {
     })
     .from(reports)
     .innerJoin(restaurants, eq(reports.restaurantId, restaurants.id))
-    .where(eq(reports.studentId, session.user.id))
+    .where(eq(reports.studentId, student.id))
     .orderBy(desc(reports.createdAt));
 
   return (

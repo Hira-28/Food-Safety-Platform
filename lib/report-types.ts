@@ -1,3 +1,5 @@
+import { reportTypeEnum } from "@/lib/db/schema";
+
 export const REPORT_TYPES = [
   { value: "contamination", label: "Food contamination / foreign object" },
   { value: "insects", label: "Insects in food" },
@@ -11,3 +13,8 @@ export const REPORT_TYPES = [
   { value: "positive", label: "Positive experience" },
   { value: "other", label: "Other" },
 ] as const;
+export const SERIOUS_REPORT_TYPES: (typeof reportTypeEnum.enumValues)[number][] = [
+  "contamination",
+  "insects",
+  "spoiled_food",
+];
