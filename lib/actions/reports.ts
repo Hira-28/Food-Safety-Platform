@@ -1,0 +1,69 @@
+"use server";
+
+import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
+import { auth } from "@/auth";
+import { db } from "@/lib/db";
+import { reports, reportTypeEnum, restaurants } from "@/lib/db/schema";
+import { eq } from "drizzle-orm";
+
+export async function createReport(
+  _previousState: { error: string } | undefined,
+  formData: FormData
+) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    redirect("/auth/signin");
+  }
+
+  const restaurantId = formData.get("restaurantId");
+  const type = formData.get("type");
+  const description = formData.get("description");
+
+  if (
+    typeof restaurantId !== "string" ||
+    !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+      restaurantId
+    )
+  ) {
+    return { error: "Select a valid restaurant." };
+  }
+
+  if (
+    typeof type !== "string" ||
+    !reportTypeEnum.enumValues.some((validType) => validType === type)
+  ) {
+    return { error: "Select a valid report type." };
+  }
+
+  if (typeof description !== "string") {
+    return { error: "Describe what happened in at least 10 characters." };
+  }
+
+  const trimmedDescription = description.trim();
+  if (trimmedDescription.length < 10 || trimmedDescription.length > 5000) {
+    return {
+      error: "Your description must be between 10 and 5,000 characters.",
+    };
+  }
+
+  const [restaurant] = await db
+    .select({ id: restaurants.id })
+    .from(restaurants)
+    .where(eq(restaurants.id, restaurantId))
+    .limit(1);
+
+  if (!restaurant) {
+    return { error: "That restaurant could not be found. Please select another." };
+  }
+
+  await db.insert(reports).values({
+    restaurantId,
+    studentId: session.user.id,
+    type: type as (typeof reportTypeEnum.enumValues)[number],
+    description: trimmedDescription,
+  });
+
+  revalidatePath(`/restaurants/${restaurantId}`);
+  redirect(`/restaurants/${restaurantId}?reported=true`);
+}

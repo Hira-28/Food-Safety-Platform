@@ -1,16 +1,20 @@
 import Image from "next/image";
 import Link from "next/link";
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
-import { restaurants } from "@/lib/db/schema";
+import { restaurants, reports } from "@/lib/db/schema";
+import { REPORT_TYPES } from "@/lib/report-types";
 
 export default async function RestaurantDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ reported?: string }>;
 }) {
   const { id } = await params;
+  const { reported } = await searchParams;
 
   const [restaurant] = await db
     .select()
@@ -21,6 +25,12 @@ export default async function RestaurantDetailPage({
     notFound();
   }
 
+  const restaurantReports = await db
+    .select()
+    .from(reports)
+    .where(eq(reports.restaurantId, id))
+    .orderBy(desc(reports.createdAt));
+
   return (
     <main className="max-w-3xl mx-auto px-6 py-10">
       <Link
@@ -29,6 +39,15 @@ export default async function RestaurantDetailPage({
       >
         ← Back to restaurants
       </Link>
+
+      {reported === "true" && (
+        <div className="mt-4 rounded-xl border border-[#2F6F4E]/30 bg-[#2F6F4E]/5 px-4 py-3">
+          <p className="text-sm text-[#2F6F4E]">
+            Thanks — your report was submitted and will be reviewed by the
+            proctorial team.
+          </p>
+        </div>
+      )}
 
       <div className="relative aspect-[16/9] mt-4 rounded-2xl overflow-hidden">
         <Image
@@ -83,12 +102,44 @@ export default async function RestaurantDetailPage({
 
       <div className="mt-12 pt-8 border-t border-[#1C2B24]/10">
         <h2 className="font-display text-xl text-[#1C2B24] mb-4">
-          Recent Feedback
+          Recent Feedback ({restaurantReports.length})
         </h2>
-        <p className="text-[#1C2B24]/50 text-sm">
-          No reports yet for this restaurant. Be the first to share your
-          experience.
-        </p>
+
+        {restaurantReports.length === 0 ? (
+          <p className="text-[#1C2B24]/50 text-sm">
+            No reports yet for this restaurant. Be the first to share your
+            experience.
+          </p>
+        ) : (
+          <div className="space-y-4">
+            {restaurantReports.map((r) => {
+              const typeLabel =
+                REPORT_TYPES.find((t) => t.value === r.type)?.label ??
+                r.type;
+              return (
+                <div
+                  key={r.id}
+                  className="rounded-xl border border-[#1C2B24]/10 px-4 py-3"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-[#1C2B24]">
+                      {typeLabel}
+                    </span>
+                    <span className="text-xs text-[#1C2B24]/40">
+                      {r.createdAt.toLocaleDateString()}
+                    </span>
+                  </div>
+                  <p className="text-sm text-[#1C2B24]/70 mt-1">
+                    {r.description}
+                  </p>
+                  <span className="inline-block mt-2 text-xs text-[#1C2B24]/40 capitalize">
+                    Status: {r.status.replace("_", " ")}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </main>
   );

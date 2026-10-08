@@ -10,7 +10,7 @@ type Restaurant = {
   imageUrl: string;
 };
 
-export const mockRestaurants = [
+export const mockRestaurants: Restaurant[] = [
   {
     id: "1",
     name: "Green Leaf Bengali Kitchen",

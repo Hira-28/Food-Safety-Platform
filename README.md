@@ -5,6 +5,19 @@ It is a student feedback platform where students give feedback on campus area fo
 
 ## Getting Started
 
+Create a `.env.local` file and configure the database and authentication values:
+
+```env
+DATABASE_URL=your_postgres_connection_string
+AUTH_SECRET=your_random_auth_secret
+AUTH_RESEND_KEY=your_valid_resend_api_key
+AUTH_EMAIL_FROM="Campus Eats <your-verified-sender@example.com>"
+UNIVERSITY_EMAIL_DOMAIN=diu.edu.bd
+```
+
+The Resend API key must be valid, and the sender address must be permitted by
+your Resend account. Never commit `.env.local` or share its secrets.
+
 First, run the development server:
 
 ```bash

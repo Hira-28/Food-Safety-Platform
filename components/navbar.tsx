@@ -1,6 +1,9 @@
 import Link from "next/link";
+import { auth, signOut } from "@/auth";
 
-export function Navbar() {
+export async function Navbar() {
+  const session = await auth();
+
   return (
     <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-sm border-b border-[#1C2B24]/10">
       <div className="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
@@ -26,12 +29,28 @@ export function Navbar() {
           </Link>
         </nav>
 
-        <Link
-          href="/reports/new"
-          className="rounded-full bg-[#2F6F4E] text-white text-sm font-medium px-4 py-2 hover:bg-[#255a3f] transition-colors"
-        >
-          Report an Issue
-        </Link>
+        {session?.user ? (
+          <form
+            action={async () => {
+              "use server";
+              await signOut({ redirectTo: "/" });
+            }}
+          >
+            <button
+              type="submit"
+              className="text-sm text-[#1C2B24]/70 hover:text-[#1C2B24] transition-colors"
+            >
+              Sign out
+            </button>
+          </form>
+        ) : (
+          <Link
+            href="/auth/signin"
+            className="rounded-full bg-[#2F6F4E] text-white text-sm font-medium px-4 py-2 hover:bg-[#255a3f] transition-colors"
+          >
+            Sign in
+          </Link>
+        )}
       </div>
     </header>
   );
