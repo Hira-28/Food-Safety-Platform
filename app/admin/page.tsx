@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { and, count, desc, eq, inArray } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { reports, restaurants, users } from "@/lib/db/schema";
+import { reportEvents, reports, restaurants, users } from "@/lib/db/schema";
 import { requireOfficer } from "@/lib/auth-helpers";
 import { REPORT_TYPES, SERIOUS_REPORT_TYPES } from "@/lib/report-types";
 import {
@@ -66,6 +66,10 @@ export default async function AdminQueuePage({
     counts.find((c) => c.status === s)?.total ?? 0;
   const openTotal = OPEN_STATUSES.reduce((sum, s) => sum + countFor(s), 0);
   const totalReports = counts.reduce((sum, row) => sum + row.total, 0);
+  const [actionTakenResult] = await db
+    .select({ total: count() })
+    .from(reportEvents)
+    .where(eq(reportEvents.toStatus, "action_taken"));
   const [priorityResult] = await db
     .select({ total: count() })
     .from(reports)
@@ -131,8 +135,8 @@ export default async function AdminQueuePage({
             color: "text-[#4B83A3]",
           },
           {
-            label: "Action taken",
-            value: countFor("action_taken"),
+            label: "Actions taken",
+            value: actionTakenResult?.total ?? 0,
             color: "text-[#2F6F4E]",
           },
         ].map((metric) => (
