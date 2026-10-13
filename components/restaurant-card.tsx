@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { normalizePublicImageUrl } from "@/lib/utils";
 type Restaurant = {
   id: string | number;
   imageUrl: string;
@@ -17,7 +18,7 @@ export function RestaurantCard({ restaurant }: { restaurant: Restaurant }) {
     <Link href={`/restaurants/${restaurant.id}`} className="group block">
       <div className="relative aspect-[3/2] overflow-hidden rounded-2xl">
         <Image
-          src={restaurant.imageUrl}
+          src={normalizePublicImageUrl(restaurant.imageUrl)}
           alt={restaurant.name}
           fill
           className="object-cover transition-transform duration-300 group-hover:scale-105"

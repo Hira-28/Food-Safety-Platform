@@ -7,6 +7,7 @@ import { db } from "@/lib/db";
 import { restaurants, reports } from "@/lib/db/schema";
 import { REPORT_TYPES } from "@/lib/report-types";
 import { REPORT_STATUSES, PUBLIC_STATUSES } from "@/lib/report-status";
+import { normalizePublicImageUrl } from "@/lib/utils";
 
 export default async function RestaurantDetailPage({
   params,
@@ -60,7 +61,7 @@ export default async function RestaurantDetailPage({
 
       <div className="relative aspect-[16/9] mt-4 rounded-2xl overflow-hidden">
         <Image
-          src={restaurant.imageUrl ?? ""}
+          src={normalizePublicImageUrl(restaurant.imageUrl)}
           alt={restaurant.name}
           fill
           className="object-cover"
