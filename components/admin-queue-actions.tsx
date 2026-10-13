@@ -24,8 +24,11 @@ export function AdminQueueActions({
   );
 
   return (
-    <div className="flex flex-col items-start gap-2 sm:items-end">
-      <form action={formAction} className="flex flex-wrap gap-2 sm:justify-end">
+    <div className="flex flex-col items-start gap-2 lg:items-end">
+      <form
+        action={formAction}
+        className="flex flex-wrap gap-2 lg:justify-end"
+      >
         <input type="hidden" name="reportId" value={reportId} />
         {status === "submitted" && (
           <button
@@ -33,7 +36,7 @@ export function AdminQueueActions({
             name="status"
             value="under_review"
             disabled={pending}
-            className="inline-flex items-center gap-1.5 border border-[#1C2B24]/15 px-3 py-2 text-xs font-medium text-[#1C2B24] hover:border-[#2F6F4E] hover:text-[#2F6F4E] disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-[#DCE5DC] bg-white px-3 py-2.5 text-xs font-semibold text-[#415348] transition-colors hover:border-[#9DB6A1] hover:bg-[#F5F8F4] hover:text-[#2F6F4E] disabled:opacity-50"
           >
             <Search size={14} aria-hidden="true" />
             Start review
@@ -48,14 +51,14 @@ export function AdminQueueActions({
               name="status"
               value="verified"
               disabled={pending}
-              className="inline-flex items-center gap-1.5 border border-[#2F6F4E]/30 bg-[#2F6F4E]/5 px-3 py-2 text-xs font-medium text-[#2F6F4E] hover:bg-[#2F6F4E]/10 disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-[#CFE0CD] bg-[#F1F7EF] px-3 py-2.5 text-xs font-semibold text-[#2F6F4E] transition-colors hover:bg-[#E6F1E3] disabled:opacity-50"
             >
               <Check size={14} aria-hidden="true" />
               Verify
             </button>
             <Link
               href={`/admin/reports/${reportId}?action=action_taken#status-update`}
-              className="inline-flex items-center gap-1.5 border border-[#B54E3D]/25 px-3 py-2 text-xs font-medium text-[#B54E3D] hover:bg-[#B54E3D]/5"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-[#EBD2CA] bg-[#FFF7F4] px-3 py-2.5 text-xs font-semibold text-[#B54E3D] transition-colors hover:bg-[#FCECE6]"
             >
               <ArrowUpRight size={14} aria-hidden="true" />
               Action taken
@@ -64,7 +67,7 @@ export function AdminQueueActions({
         )}
         <Link
           href={`/admin/reports/${reportId}`}
-          className="px-3 py-2 text-xs font-medium text-[#1C2B24]/60 hover:text-[#1C2B24]"
+          className="inline-flex items-center gap-1.5 rounded-xl px-3 py-2.5 text-xs font-semibold text-[#718078] transition-colors hover:bg-[#F2F5F1] hover:text-[#263B30]"
         >
           Details
         </Link>

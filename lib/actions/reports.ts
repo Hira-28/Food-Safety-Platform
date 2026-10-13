@@ -54,13 +54,21 @@ export async function createReport(
     return { error: "That restaurant could not be found. Please select another." };
   }
 
-  await db.insert(reports).values({
-    restaurantId,
-    studentId: student.id,
-    type: type as (typeof reportTypeEnum.enumValues)[number],
-    description: trimmedDescription,
-  });
+  await db.batch([
+    db.insert(reports).values({
+      restaurantId,
+      studentId: student.id,
+      type: type as (typeof reportTypeEnum.enumValues)[number],
+      description: trimmedDescription,
+    }),
+    db
+      .update(restaurants)
+      .set({ hasActiveComplaint: true })
+      .where(eq(restaurants.id, restaurantId)),
+  ]);
 
   revalidatePath(`/restaurants/${restaurantId}`);
+  revalidatePath("/");
+  revalidatePath("/reports/mine");
   redirect(`/restaurants/${restaurantId}?reported=true`);
 }

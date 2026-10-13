@@ -57,6 +57,7 @@ export const OPEN_STATUSES: ReportStatus[] = [
 ];
 
 export const PUBLIC_STATUSES: ReportStatus[] = [
+  ...OPEN_STATUSES,
   "verified",
   "resolved",
   "action_taken",

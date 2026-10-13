@@ -6,8 +6,13 @@ import { currentUserRole } from "@/lib/auth-helpers";
 import { db } from "@/lib/db";
 import { restaurants, reports } from "@/lib/db/schema";
 import { REPORT_TYPES } from "@/lib/report-types";
-import { REPORT_STATUSES, PUBLIC_STATUSES } from "@/lib/report-status";
+import {
+  REPORT_STATUSES,
+  PUBLIC_STATUSES,
+  STATUS_TONE_CLASSES,
+} from "@/lib/report-status";
 import { normalizePublicImageUrl } from "@/lib/utils";
+import { ArrowLeft, ArrowRight, CalendarDays, MapPin, ShieldAlert, Star } from "lucide-react";
 
 export default async function RestaurantDetailPage({
   params,
@@ -42,116 +47,169 @@ export default async function RestaurantDetailPage({
     .orderBy(desc(reports.createdAt));
 
   return (
-    <main className="max-w-3xl mx-auto px-6 py-10">
+    <main className="mx-auto w-full max-w-6xl space-y-8 px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
       <Link
         href="/"
-        className="text-sm text-[#1C2B24]/60 hover:text-[#1C2B24] transition-colors"
+        className="inline-flex items-center gap-2 text-sm font-semibold text-[#68766D] transition-colors hover:text-[#2F6F4E]"
       >
-        ← Back to restaurants
+        <ArrowLeft size={16} aria-hidden="true" />
+        Back to restaurant directory
       </Link>
 
       {reported === "true" && (
-        <div className="mt-4 rounded-xl border border-[#2F6F4E]/30 bg-[#2F6F4E]/5 px-4 py-3">
-          <p className="text-sm text-[#2F6F4E]">
+        <div
+          role="status"
+          className="flex items-start gap-3 rounded-2xl border border-[#CFE0CD] bg-[#F1F7EF] px-4 py-4 text-sm text-[#2F6F4E]"
+        >
+          <span className="mt-0.5 h-2 w-2 shrink-0 rounded-full bg-[#2F6F4E]" />
+          <p>
             Thanks — your report was submitted and will be reviewed by the
-            proctorial team.
+            university team.
           </p>
         </div>
       )}
 
-      <div className="relative aspect-[16/9] mt-4 rounded-2xl overflow-hidden">
-        <Image
-          src={normalizePublicImageUrl(restaurant.imageUrl)}
-          alt={restaurant.name}
-          fill
-          className="object-cover"
-        />
-        <div className="absolute bottom-4 left-4 flex items-center gap-1 rounded-full bg-black/50 backdrop-blur-sm px-3 py-1.5 text-white">
-          <span className="text-[#E8A33D]">★</span>
-          <span className="font-medium">{restaurant.rating.toFixed(1)}</span>
-          <span className="text-white/70 text-sm">
-            ({restaurant.reviewCount} reviews)
+      <section className="overflow-hidden rounded-[2rem] border border-[#E3EAE2] bg-white shadow-[0_12px_36px_rgba(23,43,35,0.07)]">
+        <div className="relative aspect-[16/8] min-h-64 bg-[#E8EEE6] sm:aspect-[16/7]">
+          <Image
+            src={normalizePublicImageUrl(restaurant.imageUrl)}
+            alt={restaurant.name}
+            fill
+            priority
+            sizes="(max-width: 1280px) 100vw, 1200px"
+            className="object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#172B23]/80 via-[#172B23]/10 to-transparent" />
+          <div className="absolute bottom-5 left-5 right-5 flex flex-wrap items-end justify-between gap-4 sm:bottom-8 sm:left-8 sm:right-8">
+            <div className="text-white">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/70">
+                Restaurant profile
+              </p>
+              <h1 className="mt-2 font-display text-3xl leading-tight sm:text-5xl">
+                {restaurant.name}
+              </h1>
+              <p className="mt-2 flex items-center gap-1.5 text-sm text-white/75">
+                <MapPin size={15} aria-hidden="true" />
+                {restaurant.location}
+              </p>
+            </div>
+            <div className="flex items-center gap-1.5 rounded-xl border border-white/20 bg-[#172B23]/55 px-3.5 py-2.5 text-white backdrop-blur-md">
+              <Star size={16} className="fill-[#F4C95D] text-[#F4C95D]" aria-hidden="true" />
+              <span className="font-semibold">{restaurant.rating.toFixed(1)}</span>
+              <span className="text-xs text-white/65">
+                ({restaurant.reviewCount} reviews)
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid gap-6 p-5 sm:p-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+          <div className="flex flex-wrap items-center gap-3">
+            <span
+              className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold ${
+                restaurant.openNow
+                  ? "bg-[#EAF3E9] text-[#2F6F4E]"
+                  : "bg-[#F0F2EF] text-[#6E7971]"
+              }`}
+            >
+              <span
+                className={`h-1.5 w-1.5 rounded-full ${
+                  restaurant.openNow ? "bg-[#2F6F4E]" : "bg-[#8B958D]"
+                }`}
+              />
+              {restaurant.openNow ? "Open now" : "Closed"}
+            </span>
+            {restaurant.categories.map((category) => (
+              <span
+                key={category}
+                className="rounded-full bg-[#F2F5F1] px-3 py-1.5 text-xs font-medium text-[#66736A]"
+              >
+                {category}
+              </span>
+            ))}
+          </div>
+          {!isOfficer && (
+            <Link
+              href={`/reports/new?restaurant=${restaurant.id}`}
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#203B2E] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-[#2F6F4E]"
+            >
+              Report an issue <ArrowRight size={16} aria-hidden="true" />
+            </Link>
+          )}
+        </div>
+      </section>
+
+      {restaurant.hasActiveComplaint && (
+        <div className="flex items-start gap-3 rounded-2xl border border-[#F0D9C9] bg-[#FFF8F2] p-4 text-sm leading-6 text-[#8D5A36]">
+          <ShieldAlert size={19} className="mt-0.5 shrink-0" aria-hidden="true" />
+          <p>
+            There is an open student report for this restaurant. Its status
+            below shows whether it is awaiting review or being investigated;
+            an open report does not confirm a violation.
+          </p>
+        </div>
+      )}
+
+      <section>
+        <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[#2F6F4E]">
+              Community updates
+            </p>
+            <h2 className="mt-1 font-display text-3xl text-[#20342A]">
+              Community reports
+            </h2>
+          </div>
+          <span className="rounded-full bg-white px-3 py-1.5 text-xs font-medium text-[#718078] shadow-sm ring-1 ring-[#E3EAE2]">
+            {restaurantReports.length}{" "}
+            {restaurantReports.length === 1 ? "report" : "reports"}
           </span>
         </div>
-      </div>
-
-      <div className="mt-6">
-        <h1 className="font-display text-3xl text-[#1C2B24]">
-          {restaurant.name}
-        </h1>
-        <p className="text-[#1C2B24]/60 mt-1">{restaurant.location}</p>
-
-        <div className="flex items-center gap-2 mt-3 text-sm text-[#1C2B24]/70">
-          <span
-            className={`inline-block h-2 w-2 rounded-full ${
-              restaurant.openNow ? "bg-[#2F6F4E]" : "bg-[#1C2B24]/20"
-            }`}
-          />
-          <span>{restaurant.openNow ? "Open now" : "Closed"}</span>
-          <span className="text-[#1C2B24]/30">·</span>
-          <span>{restaurant.categories.join(", ")}</span>
-        </div>
-
-        {restaurant.hasActiveComplaint && (
-          <div className="mt-4 rounded-xl border border-[#B54E3D]/30 bg-[#B54E3D]/5 px-4 py-3">
-            <p className="text-sm text-[#B54E3D]">
-              A report on this restaurant is currently under review by the
-              proctorial team. This does not confirm the issue — it means
-              it&apos;s being looked into.
-            </p>
-          </div>
-        )}
-
-        {!isOfficer && (
-          <Link
-            href={`/reports/new?restaurant=${restaurant.id}`}
-            className="inline-block mt-6 rounded-full bg-[#2F6F4E] text-white text-sm font-medium px-5 py-2.5 hover:bg-[#255a3f] transition-colors"
-          >
-            Report an issue here
-          </Link>
-        )}
-      </div>
-
-      <div className="mt-12 pt-8 border-t border-[#1C2B24]/10">
-        <h2 className="font-display text-xl text-[#1C2B24] mb-4">
-          Reviewed Reports ({restaurantReports.length})
-        </h2>
 
         {restaurantReports.length === 0 ? (
-          <p className="text-[#1C2B24]/50 text-sm">
-            No reviewed reports for this restaurant. Reports appear here only
-            after the proctorial team has reviewed them.
-          </p>
+          <div className="rounded-3xl border border-dashed border-[#DCE5DC] bg-white px-5 py-10 text-center">
+            <p className="font-display text-xl text-[#263B30]">
+              No community reports yet
+            </p>
+            <p className="mt-1 text-sm text-[#718078]">
+              Student reports for this restaurant will appear here.
+            </p>
+          </div>
         ) : (
-          <div className="space-y-4">
-            {restaurantReports.map((r) => {
+          <div className="grid gap-4 lg:grid-cols-2">
+            {restaurantReports.map((report) => {
               const typeLabel =
-                REPORT_TYPES.find((t) => t.value === r.type)?.label ?? r.type;
+                REPORT_TYPES.find((type) => type.value === report.type)?.label ??
+                report.type;
+              const status = REPORT_STATUSES[report.status];
               return (
-                <div
-                  key={r.id}
-                  className="rounded-xl border border-[#1C2B24]/10 px-4 py-3"
+                <article
+                  key={report.id}
+                  className="rounded-3xl border border-[#E3EAE2] bg-white p-5 shadow-[0_6px_24px_rgba(23,43,35,0.04)] sm:p-6"
                 >
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-[#1C2B24]">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <span className="font-semibold text-[#263B30]">
                       {typeLabel}
                     </span>
-                    <span className="text-xs text-[#1C2B24]/40">
-                      {r.createdAt.toLocaleDateString()}
+                    <span
+                      className={`rounded-full px-3 py-1.5 text-xs font-semibold ${STATUS_TONE_CLASSES[status.tone]}`}
+                    >
+                      {status.label}
                     </span>
                   </div>
-                  <p className="text-sm text-[#1C2B24]/70 mt-1">
-                    {r.description}
+                  <p className="mt-3 text-sm leading-6 text-[#52635A]">
+                    {report.description}
                   </p>
-                  <span className="inline-block mt-2 text-xs text-[#1C2B24]/40">
-                    Status: {REPORT_STATUSES[r.status].label}
-                  </span>
-                </div>
+                  <p className="mt-4 flex items-center gap-1.5 border-t border-[#EDF0EC] pt-3 text-xs text-[#87928A]">
+                    <CalendarDays size={13} aria-hidden="true" />
+                    Submitted {report.createdAt.toLocaleDateString()}
+                  </p>
+                </article>
               );
             })}
           </div>
         )}
-      </div>
+      </section>
     </main>
   );
 }

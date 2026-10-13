@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { and, eq, inArray } from "drizzle-orm";
 import { db } from "@/lib/db";
+import { OPEN_STATUSES } from "@/lib/report-status";
 import {
   reports,
   reportEvents,
@@ -76,7 +77,7 @@ export async function updateReportStatus(
     .where(
       and(
         eq(reports.restaurantId, report.restaurantId),
-        inArray(reports.status, ["under_review", "requires_info"])
+        inArray(reports.status, OPEN_STATUSES)
       )
     )
     .limit(1);
