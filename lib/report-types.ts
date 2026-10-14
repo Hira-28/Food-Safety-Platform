@@ -10,7 +10,6 @@ export const REPORT_TYPES = [
   { value: "poor_quality", label: "Poor food quality" },
   { value: "service", label: "Staff / service issue" },
   { value: "pricing", label: "Pricing issue" },
-  { value: "positive", label: "Positive experience" },
   { value: "other", label: "Other" },
 ] as const;
 export const SERIOUS_REPORT_TYPES: (typeof reportTypeEnum.enumValues)[number][] = [

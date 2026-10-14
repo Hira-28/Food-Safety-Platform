@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { reports, reportTypeEnum, restaurants } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { requireStudent } from "@/lib/auth-helpers";
+import { REPORT_TYPES } from "@/lib/report-types";
 
 export async function createReport(
   _previousState: { error: string } | undefined,
@@ -28,7 +29,7 @@ export async function createReport(
 
   if (
     typeof type !== "string" ||
-    !reportTypeEnum.enumValues.some((validType) => validType === type)
+    !REPORT_TYPES.some((reportType) => reportType.value === type)
   ) {
     return { error: "Select a valid report type." };
   }
