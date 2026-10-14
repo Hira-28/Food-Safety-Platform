@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowDown, ArrowRight, MapPin, Search, ShieldCheck, Utensils } from "lucide-react";
 import { RestaurantCard } from "@/components/restaurant-card";
@@ -17,6 +17,34 @@ const ALL_CATEGORIES: FoodCategory[] = [
   "Street Food",
   "Bakery",
 ];
+
+const HERO_PHRASES = ["feeling good", "feeling safe", "knowing more"];
+
+function RotatingHeroPhrase() {
+  const [phraseIndex, setPhraseIndex] = useState(0);
+
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      return;
+    }
+
+    const interval = window.setInterval(() => {
+      setPhraseIndex((currentIndex) => (currentIndex + 1) % HERO_PHRASES.length);
+    }, 2800);
+
+    return () => window.clearInterval(interval);
+  }, []);
+
+  return (
+    <span
+      key={HERO_PHRASES[phraseIndex]}
+      aria-live="off"
+      className="home-headline__part home-rotating-phrase text-[#D7F36B]"
+    >
+      {HERO_PHRASES[phraseIndex]}
+    </span>
+  );
+}
 
 function normalizeSearchText(value: string) {
   return value
@@ -78,24 +106,28 @@ export function RestaurantBrowser({
 
   return (
     <>
-      <section className="relative isolate overflow-hidden rounded-[2rem] bg-[#172B23] shadow-[0_24px_70px_rgba(23,43,35,0.2)]">
+      <section className="home-hero relative isolate overflow-hidden rounded-[2rem] bg-[#172B23] shadow-[0_24px_70px_rgba(23,43,35,0.2)]">
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_85%_40%,rgba(215,243,107,0.20),transparent_42%),linear-gradient(110deg,#172B23_0%,#203B2E_55%,#34533D_100%)]" />
         <div className="grid min-h-[430px] grid-cols-1 items-center lg:grid-cols-[minmax(0,1.1fr)_minmax(20rem,0.9fr)]">
-          <div className="px-6 py-10 text-white sm:px-10 lg:px-14 lg:py-14">
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.06] px-3 py-1.5 text-xs font-semibold text-[#D7F36B]">
+          <div className="home-hero-copy px-6 py-10 text-white sm:px-10 lg:px-14 lg:py-14">
+            <span className="home-reveal home-reveal--badge inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.06] px-3 py-1.5 text-xs font-semibold text-[#D7F36B]">
               <ShieldCheck size={14} aria-hidden="true" />
               Student-powered food safety
             </span>
-            <h1 className="mt-6 max-w-2xl font-display text-4xl leading-[1.07] tracking-tight sm:text-5xl lg:text-6xl">
-              Good food starts with{" "}
-              <span className="text-[#D7F36B]">feeling good</span> about where
-              you eat.
+            <h1 className="home-headline mt-6 max-w-2xl font-display text-4xl leading-[1.07] tracking-tight sm:text-5xl lg:text-6xl">
+              <span className="home-headline__part home-headline__part--one">
+                Good food starts with
+              </span>{" "}
+              <RotatingHeroPhrase />{" "}
+              <span className="home-headline__part home-headline__part--three">
+                about where you eat.
+              </span>
             </h1>
-            <p className="mt-5 max-w-lg text-sm leading-6 text-white/65 sm:text-base sm:leading-7">
+            <p className="home-reveal home-reveal--supporting mt-5 max-w-lg text-sm leading-6 text-white/65 sm:text-base sm:leading-7">
               Find campus favorites, check what students are saying, and help
               make every meal a safer one.
             </p>
-            <div className="mt-7 flex flex-wrap gap-3">
+            <div className="home-hero-actions mt-7 flex flex-wrap gap-3">
               <a
                 href="#restaurant-list"
                 className="inline-flex items-center gap-2 rounded-xl bg-[#D7F36B] px-5 py-3 text-sm font-bold text-[#172B23] shadow-lg shadow-black/10 transition hover:-translate-y-0.5 hover:bg-[#E3FA8B]"
@@ -109,7 +141,7 @@ export function RestaurantBrowser({
                 Share a report <ArrowRight size={15} aria-hidden="true" />
               </Link>
             </div>
-            <div className="mt-9 flex flex-wrap gap-x-7 gap-y-3 border-t border-white/10 pt-5">
+            <div className="home-hero-stats mt-9 flex flex-wrap gap-x-7 gap-y-3 border-t border-white/10 pt-5">
               <div>
                 <p className="font-display text-2xl text-white">
                   {restaurants.length}
@@ -128,7 +160,7 @@ export function RestaurantBrowser({
               </div>
             </div>
           </div>
-          <div className="relative h-[260px] p-3 sm:h-[340px] sm:p-5 lg:h-full lg:min-h-[500px]">
+          <div className="home-hero-image relative h-[260px] p-3 sm:h-[340px] sm:p-5 lg:h-full lg:min-h-[500px]">
             <div className="absolute inset-3 overflow-hidden rounded-[1.5rem] bg-[#263B30] sm:inset-5">
               <Image
                 src="/hotels/dhaka.jpeg"
@@ -136,7 +168,7 @@ export function RestaurantBrowser({
                 fill
                 priority
                 sizes="(max-width: 1023px) 100vw, 45vw"
-                className="object-cover object-center transition-transform duration-700 hover:scale-[1.02]"
+                className="home-hero-image__photo object-cover object-center transition-transform duration-700 hover:scale-[1.02]"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#172B23]/80 via-[#172B23]/5 to-[#172B23]/10" />
               <div className="absolute inset-x-5 bottom-5 rounded-2xl border border-white/15 bg-[#172B23]/55 p-4 text-white backdrop-blur-xl">
@@ -151,7 +183,7 @@ export function RestaurantBrowser({
                 </p>
               </div>
             </div>
-            <div className="absolute right-1 top-10 flex h-14 w-14 items-center justify-center rounded-2xl border border-white/15 bg-[#D7F36B] text-[#172B23] shadow-xl">
+            <div className="home-hero-float absolute right-1 top-10 flex h-14 w-14 items-center justify-center rounded-2xl border border-white/15 bg-[#D7F36B] text-[#172B23] shadow-xl">
               <Utensils size={22} aria-hidden="true" />
             </div>
           </div>
@@ -177,7 +209,7 @@ export function RestaurantBrowser({
         </div>
 
         {topHotels.length ? (
-          <div className="mt-7 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="home-card-stagger mt-7 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-2 xl:grid-cols-3">
             {topHotels.map((restaurant) => (
               <RestaurantCard
                 key={restaurant.id}
