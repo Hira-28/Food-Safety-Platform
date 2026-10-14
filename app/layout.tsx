@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Fraunces, Inter } from "next/font/google";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
@@ -26,8 +27,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={`${fraunces.variable} ${inter.variable} antialiased`}>
+        <Script id="theme-init" strategy="beforeInteractive">
+          {`try {
+  var savedTheme = localStorage.getItem("campus-eats-theme");
+  var prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  document.documentElement.classList.toggle("dark", savedTheme ? savedTheme === "dark" : prefersDark);
+} catch (error) {
+  console.error("Unable to initialize the saved color theme.", error);
+}`}
+        </Script>
         <Navbar />
         {children}
         <Footer />

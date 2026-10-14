@@ -18,6 +18,17 @@ UNIVERSITY_EMAIL_DOMAIN=diu.edu.bd
 The Resend API key must be valid, and the sender address must be permitted by
 your Resend account. Never commit `.env.local` or share its secrets.
 
+Apply the database schema and seed the 60 sample restaurants:
+
+```bash
+npm run db:push
+npm run db:seed
+```
+
+Run the seed command again to refresh those sample restaurant records; it
+updates existing records by name rather than adding duplicates. Ratings and
+review totals are calculated from student reviews.
+
 First, run the development server:
 
 ```bash

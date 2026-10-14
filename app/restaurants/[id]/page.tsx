@@ -1,10 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
-import { eq, desc, and, inArray } from "drizzle-orm";
+import { eq, desc, and, inArray, avg, count } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { currentUserRole } from "@/lib/auth-helpers";
 import { db } from "@/lib/db";
-import { restaurants, reports } from "@/lib/db/schema";
+import { restaurants, reports, reviews, users } from "@/lib/db/schema";
+import { ReviewForm } from "@/components/review-form";
 import { REPORT_TYPES } from "@/lib/report-types";
 import {
   REPORT_STATUSES,
@@ -25,6 +26,7 @@ export default async function RestaurantDetailPage({
   const { reported } = await searchParams;
   const role = await currentUserRole();
   const isOfficer = role === "officer" || role === "super_admin";
+  const isStudent = role === "student";
 
   const [restaurant] = await db
     .select()
@@ -35,16 +37,41 @@ export default async function RestaurantDetailPage({
     notFound();
   }
 
-  const restaurantReports = await db
-    .select()
-    .from(reports)
-    .where(
-      and(
-        eq(reports.restaurantId, id),
-        inArray(reports.status, PUBLIC_STATUSES)
-      )
-    )
-    .orderBy(desc(reports.createdAt));
+  const [restaurantReports, restaurantReviews, reviewSummary] =
+    await Promise.all([
+      db
+        .select()
+        .from(reports)
+        .where(
+          and(
+            eq(reports.restaurantId, id),
+            inArray(reports.status, PUBLIC_STATUSES)
+          )
+        )
+        .orderBy(desc(reports.createdAt)),
+      db
+        .select({
+          id: reviews.id,
+          rating: reviews.rating,
+          body: reviews.body,
+          createdAt: reviews.createdAt,
+          studentName: users.name,
+        })
+        .from(reviews)
+        .innerJoin(users, eq(reviews.studentId, users.id))
+        .where(eq(reviews.restaurantId, id))
+        .orderBy(desc(reviews.createdAt)),
+      db
+        .select({
+          rating: avg(reviews.rating),
+          reviewCount: count(reviews.id),
+        })
+        .from(reviews)
+        .where(eq(reviews.restaurantId, id)),
+    ]);
+
+  const rating = Number(reviewSummary[0]?.rating ?? 0);
+  const reviewCount = reviewSummary[0]?.reviewCount ?? 0;
 
   return (
     <main className="mx-auto w-full max-w-6xl space-y-8 px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
@@ -95,9 +122,9 @@ export default async function RestaurantDetailPage({
             </div>
             <div className="flex items-center gap-1.5 rounded-xl border border-white/20 bg-[#172B23]/55 px-3.5 py-2.5 text-white backdrop-blur-md">
               <Star size={16} className="fill-[#F4C95D] text-[#F4C95D]" aria-hidden="true" />
-              <span className="font-semibold">{restaurant.rating.toFixed(1)}</span>
+              <span className="font-semibold">{rating.toFixed(1)}</span>
               <span className="text-xs text-white/65">
-                ({restaurant.reviewCount} reviews)
+                ({reviewCount} reviews)
               </span>
             </div>
           </div>
@@ -149,6 +176,89 @@ export default async function RestaurantDetailPage({
           </p>
         </div>
       )}
+
+      <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.85fr)]">
+        <div>
+          <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[#2F6F4E]">
+                Student feedback
+              </p>
+              <h2 className="mt-1 font-display text-3xl text-[#20342A]">
+                Reviews
+              </h2>
+            </div>
+            <span className="rounded-full bg-white px-3 py-1.5 text-xs font-medium text-[#718078] shadow-sm ring-1 ring-[#E3EAE2]">
+              {reviewCount} {reviewCount === 1 ? "review" : "reviews"}
+            </span>
+          </div>
+
+          {restaurantReviews.length === 0 ? (
+            <div className="rounded-3xl border border-dashed border-[#DCE5DC] bg-white px-5 py-10 text-center">
+              <p className="font-display text-xl text-[#263B30]">
+                No reviews yet
+              </p>
+              <p className="mt-1 text-sm text-[#718078]">
+                Be the first to share your experience.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {restaurantReviews.map((review) => (
+                <article
+                  key={review.id}
+                  className="rounded-2xl border border-[#E3EAE2] bg-white p-4 shadow-[0_6px_24px_rgba(23,43,35,0.035)]"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className="font-semibold text-[#263B30]">
+                      {review.studentName}
+                    </p>
+                    <div className="flex items-center gap-2 text-sm">
+                      <span
+                        className="text-[#B78316]"
+                        aria-label={`${review.rating} out of 5 stars`}
+                      >
+                        {"★".repeat(review.rating)}
+                        {"☆".repeat(5 - review.rating)}
+                      </span>
+                      <span className="text-xs text-[#87928A]">
+                        {review.createdAt.toLocaleDateString()}
+                      </span>
+                    </div>
+                  </div>
+                  <p lang="bn" className="mt-3 whitespace-pre-wrap text-sm leading-6 text-[#52635A]">
+                    {review.body}
+                  </p>
+                </article>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <aside className="h-fit rounded-3xl border border-[#E3EAE2] bg-white p-5 shadow-[0_6px_24px_rgba(23,43,35,0.045)] sm:p-6">
+          <h3 className="font-display text-2xl text-[#20342A]">
+            Share your experience
+          </h3>
+          <p className="mb-5 mt-1 text-sm leading-6 text-[#718078]">
+            Your star rating contributes to this place’s live average. One
+            review is allowed per student.
+          </p>
+          {isStudent ? (
+            <ReviewForm restaurantId={restaurant.id} />
+          ) : role === null ? (
+            <Link
+              href="/auth/signin"
+              className="inline-flex rounded-xl bg-[#203B2E] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#2F6F4E]"
+            >
+              Sign in to review
+            </Link>
+          ) : (
+            <p className="text-sm text-[#718078]">
+              Student accounts can submit reviews.
+            </p>
+          )}
+        </aside>
+      </section>
 
       <section>
         <div className="mb-5 flex flex-wrap items-end justify-between gap-3">

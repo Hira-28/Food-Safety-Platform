@@ -1,10 +1,24 @@
-import { pgTable, pgEnum, uuid, text, real, integer, boolean, timestamp } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  pgEnum,
+  uuid,
+  text,
+  real,
+  integer,
+  smallint,
+  boolean,
+  timestamp,
+  uniqueIndex,
+  check,
+} from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 
 export const restaurants = pgTable("restaurants", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: text("name").notNull(),
   location: text("location").notNull(),
   categories: text("categories").array().notNull(),
+  searchTerms: text("search_terms").array().notNull().default([]),
   rating: real("rating").notNull().default(0),
   reviewCount: integer("review_count").notNull().default(0),
   openNow: boolean("open_now").notNull().default(true),
@@ -12,6 +26,29 @@ export const restaurants = pgTable("restaurants", {
   imageUrl: text("image_url"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
+
+export const reviews = pgTable(
+  "reviews",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    restaurantId: uuid("restaurant_id")
+      .notNull()
+      .references(() => restaurants.id),
+    studentId: uuid("student_id")
+      .notNull()
+      .references(() => users.id),
+    rating: smallint("rating").notNull(),
+    body: text("body").notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("reviews_restaurant_student_unique").on(
+      table.restaurantId,
+      table.studentId
+    ),
+    check("reviews_rating_range", sql`${table.rating} between 1 and 5`),
+  ]
+);
 
 export const reportTypeEnum = pgEnum("report_type", [
   "contamination",

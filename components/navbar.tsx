@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight, UtensilsCrossed } from "lucide-react";
 import { signOut } from "@/auth";
 import { AppNavigation } from "@/components/app-navigation";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { currentUserRole } from "@/lib/auth-helpers";
 
 export async function Navbar() {
@@ -9,7 +10,7 @@ export async function Navbar() {
   const isOfficer = role === "officer" || role === "super_admin";
 
   return (
-    <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-sm border-b border-[#1C2B24]/10">
+    <header className="sticky top-0 z-50 border-b border-[#1C2B24]/10 bg-white/90 backdrop-blur-sm">
       <div
         className={`mx-auto w-full px-4 sm:px-6 ${
           isOfficer ? "max-w-none md:px-8" : "max-w-7xl"
@@ -41,6 +42,7 @@ export async function Navbar() {
           )}
 
           <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+            <ThemeToggle />
             {isOfficer && (
               <Link
                 href="/admin"

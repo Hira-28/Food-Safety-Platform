@@ -7,6 +7,8 @@ import { ArrowDown, ArrowRight, MapPin, Search, ShieldCheck, Utensils } from "lu
 import { RestaurantCard } from "@/components/restaurant-card";
 import { Restaurant, FoodCategory } from "@/lib/types";
 
+type RestaurantWithReportCount = Restaurant & { reportCount: number };
+
 const ALL_CATEGORIES: FoodCategory[] = [
   "Bengali",
   "Fast Food",
@@ -16,10 +18,18 @@ const ALL_CATEGORIES: FoodCategory[] = [
   "Bakery",
 ];
 
+function normalizeSearchText(value: string) {
+  return value
+    .normalize("NFKC")
+    .toLocaleLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
+    .trim();
+}
+
 export function RestaurantBrowser({
   restaurants,
 }: {
-  restaurants: Restaurant[];
+  restaurants: RestaurantWithReportCount[];
 }) {
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState<FoodCategory | null>(
@@ -27,17 +37,39 @@ export function RestaurantBrowser({
   );
 
   const filteredRestaurants = useMemo(() => {
+    const queryWords = normalizeSearchText(search).split(/\s+/).filter(Boolean);
+
     return restaurants.filter((r) => {
-      const query = search.trim().toLocaleLowerCase();
-      const searchableText = [r.name, r.location, ...r.categories]
-        .join(" ")
-        .toLocaleLowerCase();
-      const matchesSearch = searchableText.includes(query);
+      const searchableWords = [
+        r.name,
+        r.location,
+        ...r.categories,
+        ...r.searchTerms,
+      ]
+        .flatMap((value) => normalizeSearchText(value).split(/\s+/))
+        .filter(Boolean);
+      const matchesSearch = queryWords.every((queryWord) =>
+        searchableWords.some((word) => word.includes(queryWord))
+      );
       const matchesCategory =
         !activeCategory || r.categories.includes(activeCategory);
       return matchesSearch && matchesCategory;
     });
   }, [search, activeCategory, restaurants]);
+
+  const topHotels = useMemo(
+    () =>
+      [...restaurants]
+        .filter((restaurant) => restaurant.rating > 0)
+        .sort(
+          (a, b) =>
+            b.rating - a.rating ||
+            a.reportCount - b.reportCount ||
+            b.reviewCount - a.reviewCount
+        )
+        .slice(0, 3),
+    [restaurants]
+  );
 
   const openCount = restaurants.filter((restaurant) => restaurant.openNow).length;
   const reviewedCount = restaurants.filter(
@@ -126,6 +158,43 @@ export function RestaurantBrowser({
         </div>
       </section>
 
+      <section aria-labelledby="top-hotels-heading" className="pt-12 sm:pt-16">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[#2F6F4E]">
+              Community favorites
+            </p>
+            <h2
+              id="top-hotels-heading"
+              className="mt-1 font-display text-3xl tracking-tight text-[#172B23] sm:text-4xl"
+            >
+              Top Hotels
+            </h2>
+            <p className="mt-2 text-sm text-[#718078]">
+              Ranked by rating, with fewer public safety reports as the tie-breaker.
+            </p>
+          </div>
+        </div>
+
+        {topHotels.length ? (
+          <div className="mt-7 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-2 xl:grid-cols-3">
+            {topHotels.map((restaurant) => (
+              <RestaurantCard
+                key={restaurant.id}
+                restaurant={{
+                  ...restaurant,
+                  imageUrl: restaurant.imageUrl ?? "",
+                }}
+              />
+            ))}
+          </div>
+        ) : (
+          <p className="mt-6 rounded-2xl border border-dashed border-[#DCE5DC] bg-white px-5 py-8 text-center text-sm text-[#718078]">
+            Top hotels will appear here as students add ratings.
+          </p>
+        )}
+      </section>
+
       <section id="restaurant-list" className="scroll-mt-8 pt-12 sm:pt-16">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
@@ -151,7 +220,7 @@ export function RestaurantBrowser({
             />
             <input
               type="search"
-              placeholder="Search by restaurant name..."
+              placeholder="Search in English, বাংলা, or Banglish..."
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               className="w-full rounded-xl border border-[#E3EAE2] bg-[#F8FAF7] py-3 pl-11 pr-4 text-sm text-[#1C2B24] outline-none transition placeholder:text-[#9AA59D] focus:border-[#2F6F4E] focus:bg-white focus:ring-4 focus:ring-[#2F6F4E]/10"
