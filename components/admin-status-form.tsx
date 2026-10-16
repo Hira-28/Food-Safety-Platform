@@ -3,7 +3,11 @@
 import { useActionState } from "react";
 import { Check, LoaderCircle } from "lucide-react";
 import { updateReportStatus, type AdminFormState } from "@/lib/actions/admin";
-import { REPORT_STATUSES, type ReportStatus } from "@/lib/report-status";
+import {
+  REPORT_STATUSES,
+  ALLOWED_TRANSITIONS,
+  type ReportStatus,
+} from "@/lib/report-status";
 
 const initialState: AdminFormState = {};
 
@@ -20,6 +24,12 @@ export function AdminStatusForm({
     updateReportStatus,
     initialState
   );
+
+   // Only offer the current status and the moves that are actually allowed.
+  const options: ReportStatus[] = [
+    currentStatus,
+    ...ALLOWED_TRANSITIONS[currentStatus],
+  ];
 
   return (
     <form action={formAction} className="space-y-5">
@@ -38,11 +48,12 @@ export function AdminStatusForm({
           defaultValue={initialStatus ?? currentStatus}
           className="w-full rounded-xl border border-[#DCE5DC] bg-white px-4 py-3 text-sm text-[#263B30] shadow-sm outline-none transition focus:border-[#2F6F4E] focus:ring-4 focus:ring-[#2F6F4E]/10"
         >
-          {Object.entries(REPORT_STATUSES).map(([value, s]) => (
+                    {options.map((value) => (
             <option key={value} value={value}>
-              {s.label}
+              {REPORT_STATUSES[value].label}
             </option>
           ))}
+          
         </select>
       </div>
 
@@ -57,7 +68,7 @@ export function AdminStatusForm({
           id="report-note"
           name="note"
           rows={3}
-          placeholder="Explain this decision. Required for 'More information needed', 'Could not be verified' and 'Action taken'."
+          placeholder="Explain this decision. Required for 'More information needed', 'Verified', 'Could not be verified', 'Action taken' and 'Closed'."
           className="w-full resize-y rounded-xl border border-[#DCE5DC] bg-white px-4 py-3 text-sm leading-6 text-[#263B30] shadow-sm outline-none transition placeholder:text-[#9AA59D] focus:border-[#2F6F4E] focus:ring-4 focus:ring-[#2F6F4E]/10"
         />
       </div>

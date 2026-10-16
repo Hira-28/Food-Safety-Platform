@@ -3,7 +3,15 @@
 import { revalidatePath } from "next/cache";
 import { and, eq, inArray } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { OPEN_STATUSES } from "@/lib/report-status";
+import {
+  OPEN_STATUSES,
+  REPORT_STATUSES,
+  ALLOWED_TRANSITIONS,
+  NOTE_REQUIRED_STATUSES,
+  REOPEN_FROM,
+  QUICK_STATUSES,
+  type ReportStatus,
+} from "@/lib/report-status";
 import {
   reports,
   reportEvents,
@@ -17,14 +25,6 @@ export type AdminFormState = {
   success?: string;
 };
 
-type StatusValue = (typeof reportStatusEnum.enumValues)[number];
-
-const NOTE_REQUIRED: StatusValue[] = [
-  "requires_info",
-  "unverified",
-  "action_taken",
-];
-
 export async function updateReportStatus(
   _prevState: AdminFormState,
   formData: FormData
@@ -32,17 +32,11 @@ export async function updateReportStatus(
   const officer = await requireOfficer();
 
   const reportId = formData.get("reportId") as string;
-  const newStatus = formData.get("status") as StatusValue;
+  const newStatus = formData.get("status") as ReportStatus;
   const note = ((formData.get("note") as string) ?? "").trim();
 
   if (!reportId || !reportStatusEnum.enumValues.includes(newStatus)) {
     return { error: "Choose a valid status." };
-  }
-
-  if (NOTE_REQUIRED.includes(newStatus) && note.length < 5) {
-    return {
-      error: "Add a short note explaining this decision (at least 5 characters).",
-    };
   }
 
   const [report] = await db
@@ -54,8 +48,28 @@ export async function updateReportStatus(
     return { error: "Report not found." };
   }
 
-  if (report.status === newStatus && !note) {
-    return { error: "The report already has this status. Add a note or pick a different one." };
+  // Same status is allowed only as a note-only entry.
+  if (report.status === newStatus) {
+    if (!note) {
+      return {
+        error:
+          "The report already has this status. Add a note or pick a different one.",
+      };
+    }
+  } else if (!ALLOWED_TRANSITIONS[report.status].includes(newStatus)) {
+    return {
+      error: `A report that is "${REPORT_STATUSES[report.status].label}" can't be moved to "${REPORT_STATUSES[newStatus].label}". Refresh the page and check its current status.`,
+    };
+  }
+
+  const needsNote =
+    NOTE_REQUIRED_STATUSES.includes(newStatus) ||
+    (newStatus === "under_review" && REOPEN_FROM.includes(report.status));
+
+  if (needsNote && note.length < 5) {
+    return {
+      error: "Add a short note explaining this decision (at least 5 characters).",
+    };
   }
 
   // Both writes succeed or neither does.
@@ -100,8 +114,8 @@ export async function quickUpdateReportStatus(
   previousState: AdminFormState,
   formData: FormData
 ): Promise<AdminFormState> {
-  const status = formData.get("status");
-  if (status !== "under_review" && status !== "verified" && status !== "resolved") {
+  const status = formData.get("status") as ReportStatus;
+  if (!QUICK_STATUSES.includes(status)) {
     return { error: "Choose a valid quick action." };
   }
 

@@ -62,3 +62,28 @@ export const PUBLIC_STATUSES: ReportStatus[] = [
   "resolved",
   "action_taken",
 ];
+
+export const ALLOWED_TRANSITIONS: Record<ReportStatus, ReportStatus[]> = {
+  submitted: ["under_review", "unverified", "closed"],
+  under_review: ["requires_info", "verified", "unverified", "closed"],
+  requires_info: ["under_review", "verified", "unverified", "closed"],
+  verified: ["action_taken", "resolved", "closed"],
+  action_taken: ["resolved", "closed"],
+  unverified: ["under_review", "closed"],
+  resolved: ["closed", "under_review"],
+  closed: ["under_review"],
+};
+
+export const NOTE_REQUIRED_STATUSES: ReportStatus[] = [
+  "requires_info",
+  "verified",
+  "unverified",
+  "action_taken",
+  "closed",
+];
+
+// Reopening a finished report needs an explanation.
+export const REOPEN_FROM: ReportStatus[] = ["unverified", "resolved", "closed"];
+
+// Statuses a one-click queue button may set. Everything else needs the detail page.
+export const QUICK_STATUSES: ReportStatus[] = ["under_review", "resolved"];

@@ -6,7 +6,12 @@ import { db } from "@/lib/db";
 import { reports, reportEvents, restaurants, users } from "@/lib/db/schema";
 import { requireOfficer } from "@/lib/auth-helpers";
 import { REPORT_TYPES } from "@/lib/report-types";
-import { REPORT_STATUSES, STATUS_TONE_CLASSES } from "@/lib/report-status";
+import {
+  REPORT_STATUSES,
+  STATUS_TONE_CLASSES,
+  ALLOWED_TRANSITIONS,
+  type ReportStatus,
+} from "@/lib/report-status";
 import { AdminStatusForm } from "@/components/admin-status-form";
 
 export default async function AdminReportPage({
@@ -201,8 +206,12 @@ export default async function AdminReportPage({
               <AdminStatusForm
                 reportId={report.id}
                 currentStatus={report.status}
-                initialStatus={
-                  action === "action_taken" ? "action_taken" : report.status
+                                initialStatus={
+                  ALLOWED_TRANSITIONS[report.status].includes(
+                    action as ReportStatus
+                  )
+                    ? (action as ReportStatus)
+                    : report.status
                 }
               />
             </div>

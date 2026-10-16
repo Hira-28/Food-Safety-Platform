@@ -4,7 +4,7 @@ import { eq, desc, and, inArray, avg, count } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { currentUserRole } from "@/lib/auth-helpers";
 import { db } from "@/lib/db";
-import { restaurants, reports, reviews, users } from "@/lib/db/schema";
+import { restaurants, reports, reviews } from "@/lib/db/schema";
 import { ReviewForm } from "@/components/review-form";
 import { REPORT_TYPES } from "@/lib/report-types";
 import {
@@ -55,10 +55,9 @@ export default async function RestaurantDetailPage({
           rating: reviews.rating,
           body: reviews.body,
           createdAt: reviews.createdAt,
-          studentName: users.name,
+          
         })
         .from(reviews)
-        .innerJoin(users, eq(reviews.studentId, users.id))
         .where(eq(reviews.restaurantId, id))
         .orderBy(desc(reviews.createdAt)),
       db
@@ -211,7 +210,7 @@ export default async function RestaurantDetailPage({
                 >
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <p className="font-semibold text-[#263B30]">
-                      {review.studentName}
+                      Student
                     </p>
                     <div className="flex items-center gap-2 text-sm">
                       <span
