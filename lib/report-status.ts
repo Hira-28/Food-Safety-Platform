@@ -65,8 +65,8 @@ export const PUBLIC_STATUSES: ReportStatus[] = [
 
 export const ALLOWED_TRANSITIONS: Record<ReportStatus, ReportStatus[]> = {
   submitted: ["under_review", "unverified", "closed"],
-  under_review: ["requires_info", "verified", "unverified", "closed"],
-  requires_info: ["under_review", "verified", "unverified", "closed"],
+  under_review: ["requires_info", "verified", "action_taken", "unverified", "closed"],
+  requires_info: ["under_review", "verified", "action_taken", "unverified", "closed"],
   verified: ["action_taken", "resolved", "closed"],
   action_taken: ["resolved", "closed"],
   unverified: ["under_review", "closed"],
