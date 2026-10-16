@@ -156,7 +156,7 @@ export function RestaurantBrowser({
                 <p className="font-display text-2xl text-white">
                   {reviewedCount}
                 </p>
-                <p className="mt-0.5 text-xs text-white/50">With open reports</p>
+                <p className="mt-0.5 text-xs text-white/50">Under review</p>
               </div>
             </div>
           </div>

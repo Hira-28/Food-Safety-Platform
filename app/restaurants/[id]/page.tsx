@@ -169,9 +169,9 @@ export default async function RestaurantDetailPage({
         <div className="flex items-start gap-3 rounded-2xl border border-[#F0D9C9] bg-[#FFF8F2] p-4 text-sm leading-6 text-[#8D5A36]">
           <ShieldAlert size={19} className="mt-0.5 shrink-0" aria-hidden="true" />
           <p>
-            There is an open student report for this restaurant. Its status
-            below shows whether it is awaiting review or being investigated;
-            an open report does not confirm a violation.
+            A report about this restaurant is currently being reviewed by the
+            proctorial team. This does not confirm a violation; it means the
+            report is being looked into.
           </p>
         </div>
       )}
@@ -263,10 +263,10 @@ export default async function RestaurantDetailPage({
         <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[#2F6F4E]">
-              Community updates
+              Proctorial review
             </p>
             <h2 className="mt-1 font-display text-3xl text-[#20342A]">
-              Community reports
+              Reviewed reports
             </h2>
           </div>
           <span className="rounded-full bg-white px-3 py-1.5 text-xs font-medium text-[#718078] shadow-sm ring-1 ring-[#E3EAE2]">
@@ -278,10 +278,10 @@ export default async function RestaurantDetailPage({
         {restaurantReports.length === 0 ? (
           <div className="rounded-3xl border border-dashed border-[#DCE5DC] bg-white px-5 py-10 text-center">
             <p className="font-display text-xl text-[#263B30]">
-              No community reports yet
+              No reviewed reports yet
             </p>
             <p className="mt-1 text-sm text-[#718078]">
-              Student reports for this restaurant will appear here.
+              Reports appear here only after the proctorial team has verified them.
             </p>
           </div>
         ) : (

@@ -56,11 +56,17 @@ export const OPEN_STATUSES: ReportStatus[] = [
   "requires_info",
 ];
 
+// Only reports an officer has reviewed are shown publicly.
 export const PUBLIC_STATUSES: ReportStatus[] = [
-  ...OPEN_STATUSES,
   "verified",
-  "resolved",
   "action_taken",
+  "resolved",
+];
+
+// Reports an officer has accepted for review. These drive the public "under review" note.
+export const IN_REVIEW_STATUSES: ReportStatus[] = [
+  "under_review",
+  "requires_info",
 ];
 
 export const ALLOWED_TRANSITIONS: Record<ReportStatus, ReportStatus[]> = {

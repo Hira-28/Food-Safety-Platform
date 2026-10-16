@@ -82,7 +82,7 @@ export function RestaurantCard({ restaurant }: { restaurant: Restaurant }) {
         {restaurant.hasActiveComplaint && (
           <p className="mt-4 flex items-center gap-2 rounded-xl border border-[#F0D9C9] bg-[#FFF8F2] px-3 py-2 text-xs leading-5 text-[#9A6039]">
             <span className="h-2 w-2 shrink-0 rounded-full bg-[#D78D51]" />
-            Open student report
+            Report under review
           </p>
         )}
       </div>
