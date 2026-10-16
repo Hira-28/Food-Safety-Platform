@@ -57,9 +57,7 @@ export function AdminQueueActions({
           </Link>
         )}
 
-          {(status === "under_review" ||
-          status === "requires_info" ||
-          status === "verified") && (
+        {status === "verified" && (
           <Link
             href={`/admin/reports/${reportId}?action=action_taken#status-update`}
             className="inline-flex items-center gap-1.5 rounded-xl border border-[#EBD2CA] bg-[#FFF7F4] px-3 py-2.5 text-xs font-semibold text-[#B54E3D] transition-colors hover:bg-[#FCECE6]"
